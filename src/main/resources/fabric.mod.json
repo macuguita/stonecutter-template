@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "modtemplate",
+  "name": "Mod Template",
+  "version": "${version}",
+  "authors": ["A Mod Author"],
+  "contact": {
+    "sources": "",
+    "issues": ""
+  },
+  "description": "A Mod Description",
+  "icon": "assets/icon.png",
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.macuguita.modtemplate.fabric.FabricEntrypoint"
+    ],
+    "client": [
+      "com.macuguita.modtemplate.fabric.FabricClientEntrypoint"
+    ]
+  },
+  "mixins": [
+    "modtemplate.mixins.json"
+  ],
+  "depends": {
+    "fabric-api": "*"
+  }
+}
