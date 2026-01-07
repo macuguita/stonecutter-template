@@ -1,8 +1,8 @@
 package com.macuguita.modtemplate.neoforge;
 
 //? neoforge {
-/*import cc.cassian.modtemplate.ExampleEventHandler; // sample_content
-import cc.cassian.modtemplate.ModTemplate;
+/*import com.macuguita.modtemplate.ExampleEventHandler; // sample_content
+import com.macuguita.modtemplate.ModTemplate;
 import net.minecraft.server.level.ServerPlayer; // sample_content
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;

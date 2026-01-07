@@ -42,81 +42,34 @@ jsonlang {
 
 repositories {
     mavenLocal()
-    maven ( "https://maven.minecraftforge.net" ) {
-        name = "Minecraft Forge"
-    }
-    maven {
-        name = "shedaniel (Cloth Config)"
-        url = uri("https://maven.shedaniel.me/")
-        content {
-            includeGroupAndSubgroups("me.shedaniel")
-        }
-    }
-    maven {
-        name = "Terraformers (Mod Menu)"
-        url = uri("https://maven.terraformersmc.com/releases/")
-        content {
-            includeGroupAndSubgroups("com.terraformersmc")
-            includeGroupAndSubgroups("dev.emi")
-        }
-    }
-    maven {
-        name = "Wisp Forest Maven"
-        url = uri("https://maven.wispforest.io/releases/")
-        content {
-            includeGroupAndSubgroups("io.wispforest")
-        }
-    }
-    maven {
-        name = "Modrinth"
-        url = uri("https://api.modrinth.com/maven")
-        content {
-            includeGroupAndSubgroups("maven.modrinth")
-        }
-    }
-    maven {
-        name = "WTHIT"
-        url = uri("https://maven2.bai.lol")
-        content {
-            includeGroupAndSubgroups("mcp.mobius.waila")
-            includeGroupAndSubgroups("lol.bai")
-        }
-    }
-    maven {
-        name = "Sisby Maven"
-        url = uri("https://repo.sleeping.town/")
-        content {
-            includeGroupAndSubgroups("folk.sisby")
-        }
-    }
-    maven {
-        name = "Parchment Mappings"
-        url = uri("https://maven.parchmentmc.org")
-        content {
-            includeGroupAndSubgroups("org.parchmentmc")
-        }
-    }
-    maven {
-        name = "Xander Maven"
-        url = uri("https://maven.isxander.dev/releases")
-        content {
-            includeGroupAndSubgroups("dev.isxander")
-            includeGroupAndSubgroups("org.quiltmc.parsers")
-        }
-    }
-    maven {
-        name = "Nucleoid Maven (Polymer)"
-        url = uri("https://maven.nucleoid.xyz")
-        content {
-            includeGroupAndSubgroups("eu.pb4")
-            includeGroupAndSubgroups("xyz.nucleoid")
-        }
-    }
-    maven {
-        name = "Fuzs Mod Resources"
-        url = uri("https://raw.githubusercontent.com/Fuzss/modresources/main/maven/")
-        content {
-            includeGroupAndSubgroups("fuzs")
+    val exclusiveRepos: List<Triple<String, String, List<String>>> = listOf(
+        Triple("Minecraft Forge", "https://maven.minecraftforge.net", emptyList()),
+        Triple("shedaniel (Cloth Config)", "https://maven.shedaniel.me/", listOf("me.shedaniel")),
+        Triple("Terraformers (Mod Menu)", "https://maven.terraformersmc.com/releases/", listOf("com.terraformersmc", "dev.emi")),
+        Triple("Wisp Forest Maven", "https://maven.wispforest.io/releases/", listOf("io.wispforest")),
+        Triple("Modrinth", "https://api.modrinth.com/maven", listOf("maven.modrinth")),
+        Triple("Sisby Maven", "https://repo.sleeping.town/", listOf("folk.sisby")),
+        Triple("Parchment Mappings", "https://maven.parchmentmc.org", listOf("org.parchmentmc")),
+    )
+
+    exclusiveRepos.forEach { (name, url, groups) ->
+        if (groups.isNotEmpty()) {
+            exclusiveContent {
+                forRepository {
+                    maven {
+                        this.name = name
+                        setUrl(url)
+                    }
+                }
+                filter {
+                    groups.forEach { includeGroupAndSubgroups(it) }
+                }
+            }
+        } else {
+            maven {
+                this.name = name
+                setUrl(url)
+            }
         }
     }
 }
@@ -177,6 +130,7 @@ val additionalVersions: List<String> = additionalVersionsStr
 
 publishMods {
     file = tasks.jar.map { it.archiveFile.get() }
+    additionalFiles.from(tasks.named<org.gradle.jvm.tasks.Jar>("sourcesJar").map { it.archiveFile.get() })
 
     // one of BETA, ALPHA, STABLE
     type = STABLE
@@ -204,5 +158,19 @@ publishMods {
         minecraftVersions.add(stonecutter.current.version)
         minecraftVersions.addAll(additionalVersions)
         requires("fabric-api")
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            groupId = property("mod.group") as String
+            artifactId = base.archivesName.get()
+            version = project.version.toString()
+            from(components["java"])
+        }
+    }
+    repositories {
+        mavenLocal()
     }
 }

@@ -1,7 +1,7 @@
 package com.macuguita.modtemplate.neoforge;
 
 //? neoforge {
-/*import cc.cassian.modtemplate.Platform;
+/*import com.macuguita.modtemplate.Platform;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.FMLPaths;

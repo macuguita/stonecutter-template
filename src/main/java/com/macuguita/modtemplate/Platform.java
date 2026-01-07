@@ -4,7 +4,7 @@ package com.macuguita.modtemplate;
 import com.macuguita.modtemplate.fabric.FabricPlatformImpl;
 //?}
 //? neoforge {
-/*import cc.cassian.modtemplate.neoforge.NeoForgePlatformImpl;
+/*import com.macuguita.modtemplate.neoforge.NeoForgePlatformImpl;
 *///?}
 import java.nio.file.Path;
 
