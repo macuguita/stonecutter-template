@@ -1,6 +1,6 @@
 plugins {
     id("net.neoforged.moddev")
-    id ("dev.kikugie.postprocess.jsonlang")
+    id("dev.kikugie.postprocess.jsonlang")
     id("me.modmuss50.mod-publish-plugin")
     id("maven-publish")
 }
@@ -27,13 +27,16 @@ jsonlang {
 }
 
 repositories {
+    mavenLocal()
+    mavenCentral()
     val exclusiveRepos: List<Triple<String, String, List<String>>> = listOf(
+        Triple("macuguita Maven", "https://maven.macuguita.com/releases/", listOf("com.macuguita", "folk.sisby", "org.quiltmc")),
         Triple("Minecraft Forge", "https://maven.minecraftforge.net", emptyList()),
         Triple("shedaniel (Cloth Config)", "https://maven.shedaniel.me/", listOf("me.shedaniel")),
+        Triple("Xander Maven", "https://maven.isxander.dev/releases/", listOf("dev.isxander")),
         Triple("Terraformers (Mod Menu)", "https://maven.terraformersmc.com/releases/", listOf("com.terraformersmc", "dev.emi")),
         Triple("Wisp Forest Maven", "https://maven.wispforest.io/releases/", listOf("io.wispforest")),
         Triple("Modrinth", "https://api.modrinth.com/maven", listOf("maven.modrinth")),
-        Triple("Sisby Maven", "https://repo.sleeping.town/", listOf("folk.sisby")),
         Triple("Parchment Mappings", "https://maven.parchmentmc.org", listOf("org.parchmentmc")),
     )
 
@@ -56,6 +59,14 @@ repositories {
                 setUrl(url)
             }
         }
+    }
+}
+
+val localRuntime by configurations.creating
+
+configurations {
+    runtimeClasspath {
+        extendsFrom(localRuntime)
     }
 }
 
@@ -89,17 +100,20 @@ neoForge {
 }
 
 dependencies {
-    // McQoy
-    implementation("folk.sisby:kaleido-config:${property("deps.kaleido")}")
-    jarJar("folk.sisby:kaleido-config:${property("deps.kaleido")}")
+    // macu lib
+    if (hasProperty("deps.macu_lib")) {
+        implementation("com.macuguita:macu_lib-neoforge:${property("deps.macu_lib")}+${property("deps.minecraft")}")
+    }
+    compileOnly("org.jspecify:jspecify:1.0.0")
 
+    //McQoy
     if (hasProperty("deps.mcqoy")) {
-        implementation("maven.modrinth:mcqoy:${property("deps.mcqoy")}")
+        localRuntime("maven.modrinth:mcqoy:${property("deps.mcqoy")}")
     }
 
     // YACL  - required by McQoy
     if (hasProperty("deps.yacl")) {
-        runtimeOnly("dev.isxander:yet-another-config-lib:${property("deps.yacl")}-neoforge")
+        localRuntime("dev.isxander:yet-another-config-lib:${property("deps.yacl")}-neoforge")
     }
 }
 
@@ -154,7 +168,9 @@ publishMods {
         accessToken = env.MODRINTH_API_KEY.orNull()
         minecraftVersions.add(stonecutter.current.version)
         minecraftVersions.addAll(additionalVersions)
+        requires("macu-lib")
         optional("mcqoy")
+        optional("qomc")
     }
 
     curseforge {
@@ -162,6 +178,9 @@ publishMods {
         accessToken = env.CURSEFORGE_API_KEY.orNull()
         minecraftVersions.add(stonecutter.current.version)
         minecraftVersions.addAll(additionalVersions)
+        requires("macu-lib")
+        optional("mcqoy")
+        optional("qomc")
     }
 }
 
@@ -169,12 +188,21 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             groupId = property("mod.group") as String
-            artifactId = base.archivesName.get()
-            version = project.version.toString()
+            artifactId = (property("mod.id") as String) + "-neoforge"
+            version = (property("mod.version") as String) + "+${property("deps.minecraft")}"
             from(components["java"])
         }
     }
     repositories {
         mavenLocal()
+        maven {
+            name = "macuguita"
+            url = uri("https://maven.macuguita.com/releases")
+
+            credentials {
+                username = env.MAVEN_USERNAME.orNull()
+                password = env.MAVEN_KEY.orNull()
+            }
+        }
     }
 }

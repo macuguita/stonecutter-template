@@ -1,7 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    id("net.fabricmc.fabric-loom")
+    id("net.fabricmc.fabric-loom-remap")
     id("dev.kikugie.postprocess.jsonlang")
     id("me.modmuss50.mod-publish-plugin")
     id("maven-publish")
@@ -21,6 +21,7 @@ tasks.named<ProcessResources>("processResources") {
     filesMatching(listOf("fabric.mod.json", "META-INF/neoforge.mods.toml", "META-INF/mods.toml")) {
         expand(props)
     }
+
 }
 
 tasks.named("processResources") {
@@ -77,9 +78,14 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:${property("deps.minecraft")}")
-    implementation("net.fabricmc:fabric-loader:${property("deps.fabric-loader")}")
+    mappings(loom.layered {
+        officialMojangMappings()
+        if (hasProperty("deps.parchment"))
+            parchment("org.parchmentmc.data:parchment-${property("deps.parchment")}@zip")
+    })
+    modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric-loader")}")
 
-    implementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric_api")}")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric_api")}")
     compileOnly("org.jspecify:jspecify:1.0.0")
 
     if (hasProperty("deps.macu_lib")) {
@@ -89,15 +95,15 @@ dependencies {
     }
 
     if (hasProperty("deps.mcqoy")) {
-        localRuntime("maven.modrinth:mcqoy:${property("deps.mcqoy")}")
+        modLocalRuntime("maven.modrinth:mcqoy:${property("deps.mcqoy")}")
     }
 
     if (hasProperty("deps.modmenu")) {
-        localRuntime("com.terraformersmc:modmenu:${property("deps.modmenu")}")
+        modLocalRuntime("com.terraformersmc:modmenu:${property("deps.modmenu")}")
     }
 
     if (hasProperty("deps.yacl")) {
-        localRuntime("dev.isxander:yet-another-config-lib:${property("deps.yacl")}-fabric")
+        modLocalRuntime("dev.isxander:yet-another-config-lib:${property("deps.yacl")}-fabric")
     }
 }
 
@@ -121,7 +127,7 @@ tasks {
 
     register<Copy>("buildAndCollect") {
         group = "build"
-        from(jar.map { it.archiveFile })
+        from(remapJar.map { it.archiveFile })
         into(rootProject.layout.buildDirectory.file("libs/${project.property("mod.version")}"))
         dependsOn("build")
     }
@@ -140,7 +146,7 @@ fabricApi {
 
 java {
     withSourcesJar()
-    val javaCompat = JavaVersion.VERSION_25
+    val javaCompat = JavaVersion.VERSION_21
     sourceCompatibility = javaCompat
     targetCompatibility = javaCompat
 }
@@ -153,8 +159,10 @@ val additionalVersions: List<String> = additionalVersionsStr
     ?: emptyList()
 
 publishMods {
-    file = tasks.jar.map { it.archiveFile.get() }
-    additionalFiles.from(tasks.named<org.gradle.jvm.tasks.Jar>("sourcesJar").map { it.archiveFile.get() })
+    file.set(tasks.named<org.gradle.jvm.tasks.Jar>("remapJar").map { it.archiveFile.get() })
+    additionalFiles.from(
+        tasks.named<net.fabricmc.loom.task.RemapSourcesJarTask>("remapSourcesJar").map { it.archiveFile.get() }
+    )
 
     // one of BETA, ALPHA, STABLE
     type = STABLE
