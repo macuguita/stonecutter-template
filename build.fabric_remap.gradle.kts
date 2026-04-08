@@ -14,7 +14,7 @@ tasks.named<ProcessResources>("processResources") {
     fun prop(name: String) = project.property(name) as String
 
     val props = HashMap<String, String>().apply {
-        this["version"] = prop("mod.version") + "+" + prop("deps.minecraft")
+        this["version"] = "${prop("mod.version")}+${prop("deps.minecraft")}"
         this["minecraft"] = prop("mod.mc_dep_fabric")
     }
 
@@ -32,7 +32,7 @@ version = "${property("mod.version")}+${property("deps.minecraft")}-fabric"
 base.archivesName = property("mod.id") as String
 
 // loom {
-//     accessWidenerPath = rootProject.file("src/main/resources/${property("mod.id")}.accesswidener")
+//     accessWidenerPath = rootProject.file("src/main/resources/${property("mod.id")}.classtweaker")
 // }
 
 jsonlang {

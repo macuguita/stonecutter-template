@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 plugins {
     id("net.neoforged.moddev")
     id("dev.kikugie.postprocess.jsonlang")
@@ -9,7 +11,7 @@ tasks.named<ProcessResources>("processResources") {
     fun prop(name: String) = project.property(name) as String
 
     val props = HashMap<String, String>().apply {
-        this["version"] = prop("mod.version") + "+" + prop("deps.minecraft")
+        this["version"] = "${prop("mod.version")}+${prop("deps.minecraft")}"
         this["minecraft"] = prop("mod.mc_dep_forgelike")
     }
 
@@ -120,7 +122,7 @@ dependencies {
 
 tasks {
     processResources {
-        exclude("**/fabric.mod.json", "**/*.accesswidener", "**/mods.toml")
+        exclude("**/fabric.mod.json", "**/*.classtweaker", "**/mods.toml")
     }
 
     named("createMinecraftArtifacts") {

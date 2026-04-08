@@ -23,7 +23,9 @@
   "mixins": [
     "modtemplate.mixins.json"
   ],
+  "accessWidener": "modtemplate.classtweaker",
   "depends": {
+    "fabricloader": ">=0.19.0",
     "fabric-api": "*"
   }
 }
